@@ -3,6 +3,7 @@ mlx-vlm @ git+https://github.com/Blaizzy/mlx-vlm.git@main
 numpy>=1.26
 safetensors>=0.4
 huggingface_hub>=0.30
+torchvision>=0.20  # transformers' Glm5Next video processor imports it when the processor loads
 
 # Validation only — the runtime itself needs neither torch nor transformers.
 # torch>=2.5
