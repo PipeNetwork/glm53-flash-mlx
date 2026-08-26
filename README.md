@@ -79,7 +79,14 @@ the vision tower in bf16; the MTP layer dropped.
 every build on the same 141 windows of 2048 tokens; `scripts/ppl_compare.py` does the paired
 bootstrap. The bf16 model does not fit a 512 GB machine, so 8-bit is the anchor.
 
-MEASUREMENTS_TABLE
+<!-- measurements -->
+| build | size | perplexity | ΔNLL/token vs 8-bit [95% CI] | windows worse |
+|---|---:|---:|---|---:|
+| [8bit](https://huggingface.co/pipenetwork/GLM-5.3-Flash-MLX-8bit) | 334.1 GB | 3.4607 | — | — |
+| [6bit](https://huggingface.co/pipenetwork/GLM-5.3-Flash-MLX-6bit) | 255.9 GB | 3.4646 | +0.0011 [−0.0017, +0.0038] | 89/141 |
+| [mixed-4_8bit](https://huggingface.co/pipenetwork/GLM-5.3-Flash-MLX-mixed-4_8bit) | 181.9 GB | 3.5705 | +0.0312 [+0.0271, +0.0355] | 131/141 |
+| [4bit](https://huggingface.co/pipenetwork/GLM-5.3-Flash-MLX-4bit) | 177.6 GB | 3.7549 | +0.0816 [+0.0755, +0.0879] | 140/141 |
+<!-- /measurements -->
 
 ## Layout
 

@@ -1,0 +1,4 @@
+[["pipenetwork/GLM-5.3-Flash-MLX-8bit", "334 GB. The anchor (bf16 does not fit a 512 GB Mac): ppl 3.4607 on 289k tokens of wikitext-2."],
+ ["pipenetwork/GLM-5.3-Flash-MLX-6bit", "256 GB. Indistinguishable from 8-bit: ppl 3.4646, paired ratio 0.9989 [0.9962, 1.0017], worse on 89/141 windows."],
+ ["pipenetwork/GLM-5.3-Flash-MLX-mixed-4_8bit", "182 GB. ppl 3.5705 (+3.2%): 4-bit experts, 8-bit for the ~9B non-expert weights. Fits a 256 GB Mac."],
+ ["pipenetwork/GLM-5.3-Flash-MLX-4bit", "178 GB. ppl 3.7549 (+8.5%): 4.4 GB smaller than mixed-4_8bit for 5 more points of perplexity."]]
