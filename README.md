@@ -6,7 +6,7 @@ Kimi-Delta linear-attention layers interleaved with 11 DeepSeek-sparse-attention
 behind a lightning indexer), 288-expert MoE, manifold-constrained hyper-connections
 (`model_type: glm5_next`).
 
-Published builds: **[pipenetwork/GLM-5.3-Flash MLX](https://huggingface.co/collections/pipenetwork)**
+Published builds: **[pipenetwork/GLM-5.3-Flash MLX](https://huggingface.co/collections/pipenetwork/glm-53-flash-mlx-6a8f3d8046aa3c40fbb34065)**
 (8-bit, 6-bit, mixed 4/8-bit, 4-bit; see [Measurements](#measurements)).
 
 ## Why this exists
