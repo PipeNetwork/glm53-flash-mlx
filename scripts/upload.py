@@ -156,7 +156,14 @@ def main() -> int:
     if args.card_only:
         api.upload_file(path_or_fileobj=str(d / "README.md"), path_in_repo="README.md", repo_id=args.repo, repo_type="model")
         print(f"\ncard refreshed https://huggingface.co/{args.repo}")
-        return 0; api.create_repo(args.repo, exist_ok=True, repo_type="model")
+        return 0
+    api.create_repo(args.repo, exist_ok=True, repo_type="model")
+    import time
+    for _ in range(30):  # a freshly created repo can 404 on preupload for a few seconds
+        try:
+            api.model_info(args.repo); break
+        except Exception:
+            time.sleep(2)
     api.upload_folder(folder_path=str(d), repo_id=args.repo, repo_type="model")
     print(f"\nuploaded https://huggingface.co/{args.repo}"); return 0
 
