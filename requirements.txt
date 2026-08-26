@@ -1,0 +1,10 @@
+mlx>=0.32.0
+mlx-vlm @ git+https://github.com/Blaizzy/mlx-vlm.git@main
+numpy>=1.26
+safetensors>=0.4
+huggingface_hub>=0.30
+
+# Validation only — the runtime itself needs neither torch nor transformers.
+# torch>=2.5
+# transformers>=5.16
+# pyarrow  (corpus tokenization)

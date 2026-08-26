@@ -1,0 +1,3 @@
+source: wikitext-2-raw-v1/test (local parquet)
+tokenizer: /Users/david/llm/GLM-5.3-Flash-BF16-src
+tokens: 289569
