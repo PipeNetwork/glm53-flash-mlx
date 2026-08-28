@@ -19,8 +19,16 @@ def main() -> int:
     from huggingface_hub import HfApi
     api = HfApi()
     col = api.create_collection(title=TITLE, namespace=NAMESPACE, description=DESCRIPTION, exists_ok=True)
+    from huggingface_hub.errors import HfHubHTTPError, RepositoryNotFoundError
+    skipped = []
     for item, note in items:
+        try:
+            api.model_info(item)
+        except (RepositoryNotFoundError, HfHubHTTPError):
+            skipped.append(item); continue
         api.add_collection_item(col.slug, item_id=item, item_type="model", note=note, exists_ok=True)
+    if skipped:
+        print("skipped (not on the hub yet):", skipped)
     print(f"\nhttps://huggingface.co/collections/{col.slug}"); return 0
 
 if __name__ == "__main__":

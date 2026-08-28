@@ -21,8 +21,10 @@ ROOT = Path(__file__).resolve().parents[1]
 UPSTREAM = "zai-org/GLM-5.3-Flash"
 CODE_REPO = "https://github.com/PipeNetwork/glm53-flash-mlx"
 ANCHOR = "GLM-5.3-Flash-MLX-8bit"
-ORDER = ["GLM-5.3-Flash-MLX-8bit", "GLM-5.3-Flash-MLX-6bit", "GLM-5.3-Flash-MLX-mixed-4_8bit", "GLM-5.3-Flash-MLX-4bit"]
-LABELS = {n: f"[{n.split('MLX-')[1]}](https://huggingface.co/pipenetwork/{n})" for n in ORDER}
+ORDER = ["GLM-5.3-Flash-MLX-8bit", "GLM-5.3-Flash-MLX-6bit", "GLM-5.3-Flash-MLX-mixed-4_8bit", "GLM-5.3-Flash-MLX-4bit",
+         "GLM-5.3-Flash-REAP25-MLX-mixed-4_8bit", "GLM-5.3-Flash-REAP37-MLX-mixed-4_8bit", "GLM-5.3-Flash-REAP50-MLX-mixed-4_8bit",
+         "GLM-5.3-Flash-REAP25-MLX-4bit", "GLM-5.3-Flash-REAP37-MLX-4bit", "GLM-5.3-Flash-REAP50-MLX-4bit"]
+LABELS = {n: f"[{n.replace('GLM-5.3-Flash-', '').replace('MLX-', '')}](https://huggingface.co/pipenetwork/{n})" for n in ORDER}
 
 CARD = """---
 license: mit
@@ -75,7 +77,7 @@ from glm53_flash_mlx.load import load
 model, processor = load("/path/to/{repo_name}")
 ```
 
-## Size and what is quantized
+{reap_section}## Size and what is quantized
 
 **{gb:.1f} GB** on disk (bfloat16 upstream: 642.7 GB).
 
@@ -127,10 +129,14 @@ def main() -> int:
     recipe = f"{expert_bits}-bit" if expert_bits == other_bits else f"{expert_bits}-bit experts / {other_bits}-bit everything else"
     gb = sum(p.stat().st_size for p in d.iterdir() if p.is_file()) / 1e9
     sizes = {}
+    from huggingface_hub import HfApi
     for n in ORDER:
         p = Path("/Users/david/llm/glm53-flash-out") / n
         if p.exists():
             sizes[n] = sum(f.stat().st_size for f in p.iterdir() if f.is_file()) / 1e9
+        else:
+            try: sizes[n] = sum((x.size or 0) for x in HfApi().model_info(f"pipenetwork/{n}", files_metadata=True).siblings) / 1e9
+            except Exception: pass
     res = json.load(open(args.results)); a = res[ANCHOR]
     table = markdown(rows(args.results, ANCHOR, ORDER, sizes, LABELS), "8-bit")
     ppl = {n: res[n]["perplexity"] for n in ORDER if n in res}
@@ -143,7 +149,20 @@ def main() -> int:
             f"{pct(u):+.1f}%. Routed experts are 97% of the parameters; the mixed build keeps the other ~9B "
             f"(KDA and MLA projections, shared experts, dense layers, embeddings) at 8-bit for "
             f"{sizes[m]-sizes[u]:.1f} GB more than uniform 4-bit.")
-    card = CARD.format(upstream=UPSTREAM, code_repo=CODE_REPO, repo_name=args.repo.split("/")[-1],
+    reap_section = ""
+    if "reap" in cfg:
+        r = cfg["reap"]; import numpy as np
+        sal = np.load(Path("/Users/david/llm/glm53-flash-out") / r["saliency"], allow_pickle=True)
+        halves = sal["saliency_halves"]; moe = [int(i) for i in sal["moe_layers"]]; k = r["kept_experts"]
+        ov = np.mean([len(set(np.argsort(-halves[0, i])[:k]) & set(np.argsort(-halves[1, i])[:k])) / k for i in moe])
+        reap_section = (f"## REAP pruning\n\nThis build keeps **{k} of {r['original_experts']}** routed experts per MoE layer ({r['ratio_pct']}% pruned; "
+                        f"the 3 dense layers, attention, shared experts, router and vision tower are untouched), chosen by REAP saliency — mean "
+                        f"`router_weight × ‖expert_output‖` over {r['calibration_tokens']:,} calibration tokens (wikitext-2 *train*, ten languages of "
+                        f"Wikipedia and code; zero 32-gram overlap with the eval set), collected by running the full 8-bit build. Kept experts carry "
+                        f"{100*r['saliency_retained_mean']:.1f}% of saliency mass on average; two disjoint halves of the calibration set pick the same "
+                        f"kept set {100*ov:.1f}% of the time. The pruning was applied to the already-quantized build (equivalent to pruning bf16 and "
+                        f"requantizing). Saliency retention is not a quality measure — the perplexity below is.\n\n")
+    card = CARD.format(upstream=UPSTREAM, code_repo=CODE_REPO, repo_name=args.repo.split("/")[-1], reap_section=reap_section,
                        bits_tag=f"{expert_bits}-bit", recipe=recipe, gb=gb, expert_bits=expert_bits,
                        other_bits=other_bits, tokens=a["tokens"], windows=a["windows"], seq=a["seq_len"], table=table, recommendation=recommendation)
     (d / "README.md").write_text(card)
