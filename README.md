@@ -86,7 +86,15 @@ bootstrap. The bf16 model does not fit a 512 GB machine, so 8-bit is the anchor.
 | [6bit](https://huggingface.co/pipenetwork/GLM-5.3-Flash-MLX-6bit) | 255.9 GB | 3.4646 | +0.0011 [−0.0017, +0.0038] | 89/141 |
 | [mixed-4_8bit](https://huggingface.co/pipenetwork/GLM-5.3-Flash-MLX-mixed-4_8bit) | 181.9 GB | 3.5705 | +0.0312 [+0.0271, +0.0355] | 131/141 |
 | [4bit](https://huggingface.co/pipenetwork/GLM-5.3-Flash-MLX-4bit) | 177.6 GB | 3.7549 | +0.0816 [+0.0755, +0.0879] | 140/141 |
+| [REAP25-mixed-4_8bit](https://huggingface.co/pipenetwork/GLM-5.3-Flash-REAP25-MLX-mixed-4_8bit) | 139.1 GB | 4.2249 | +0.1995 [+0.1657, +0.2377] | 139/141 |
+| [REAP37-mixed-4_8bit](https://huggingface.co/pipenetwork/GLM-5.3-Flash-REAP37-MLX-mixed-4_8bit) | 118.3 GB | 4.8752 | +0.3427 [+0.2968, +0.3929] | 141/141 |
+| [REAP50-mixed-4_8bit](https://huggingface.co/pipenetwork/GLM-5.3-Flash-REAP50-MLX-mixed-4_8bit) | 96.3 GB | 6.0757 | +0.5628 [+0.5071, +0.6219] | 141/141 |
+| [REAP25-4bit](https://huggingface.co/pipenetwork/GLM-5.3-Flash-REAP25-MLX-4bit) | 134.7 GB | 4.4361 | +0.2483 [+0.2135, +0.2873] | 141/141 |
+| [REAP37-4bit](https://huggingface.co/pipenetwork/GLM-5.3-Flash-REAP37-MLX-4bit) | 113.9 GB | 5.1057 | +0.3889 [+0.3424, +0.4393] | 141/141 |
+| [REAP50-4bit](https://huggingface.co/pipenetwork/GLM-5.3-Flash-REAP50-MLX-4bit) | 91.9 GB | 6.3840 | +0.6123 [+0.5552, +0.6722] | 141/141 |
 <!-- /measurements -->
+
+**REAP-pruned builds** (`scripts/reap_calibrate_full.py`, `scripts/prune_build.py`): experts ranked by mean `router_weight × ‖expert_output‖` over 65,536 calibration tokens (wikitext-2 *train*, ten languages of Wikipedia, code; zero 32-gram overlap with the eval set), collected by running the full 8-bit build; two disjoint halves of the calibration set pick the same kept set 86.6% of the time at keep-50%. Pruning is applied to the already-quantized mixed 4/8-bit build. Cost on this model is steep and roughly linear in experts removed: REAP25 +18%, REAP37 +37%, REAP50 +70% perplexity over the unpruned mixed build — published because 96–139 GB is what fits a 128 GB Mac, with the numbers on the card. The uniform-4-bit prunes were built and measured too (4.4361 / 5.1057 / 6.3840) and are not published: the mixed prunes beat them at every ratio for ~4 GB more.
 
 ## Layout
 
