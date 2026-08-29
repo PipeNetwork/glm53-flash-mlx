@@ -152,7 +152,7 @@ def main() -> int:
     reap_section = ""
     if "reap" in cfg:
         r = cfg["reap"]; import numpy as np
-        sal = np.load(Path("/Users/david/llm/glm53-flash-out") / r["saliency"], allow_pickle=True)
+        sal = np.load(ROOT / "artifacts" / r["saliency"], allow_pickle=True)
         halves = sal["saliency_halves"]; moe = [int(i) for i in sal["moe_layers"]]; k = r["kept_experts"]
         ov = np.mean([len(set(np.argsort(-halves[0, i])[:k]) & set(np.argsort(-halves[1, i])[:k])) / k for i in moe])
         reap_section = (f"## REAP pruning\n\nThis build keeps **{k} of {r['original_experts']}** routed experts per MoE layer ({r['ratio_pct']}% pruned; "
